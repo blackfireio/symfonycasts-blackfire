@@ -39,6 +39,15 @@ hooks:
         curl -s https://get.symfony.com/cloud/configurator | (>&2 bash)
         # (>&2 php-ext-install ctype X.Y.Z)
         # (>&2 php-ext-install iconv X.Y.Z)
+
+        # Installing blackfire-player
+        (
+            mkdir -p ${SYMFONY_CACHE_DIR}/blackfire
+            cd ${SYMFONY_CACHE_DIR}/blackfire
+            wget -N https://get.blackfire.io/blackfire-player.phar
+            chmod +x blackfire-player.phar
+            cp blackfire-player.phar /app/.global/bin/blackfire-player
+        )
         
         (>&2 symfony-build)
 
