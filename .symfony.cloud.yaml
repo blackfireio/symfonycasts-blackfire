@@ -48,6 +48,10 @@ hooks:
             chmod +x blackfire-player.phar
             cp blackfire-player.phar /app/.global/bin/blackfire-player
         )
+
+        # Remove yarn.lock to ensure that assets won't be built
+        # as they are already committed.
+        rm /app/yarn.lock
         
         (>&2 symfony-build)
 
