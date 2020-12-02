@@ -8,6 +8,7 @@ relationships:
 runtime:
     extensions:
         - pdo_mysql
+        - apcu
         - blackfire
 
 #variables:
