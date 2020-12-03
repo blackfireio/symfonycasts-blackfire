@@ -43,6 +43,7 @@ class AgreeToTermsSubscriber implements EventSubscriberInterface
         //$latestTermsDate = new \DateTimeImmutable('2019-10-15');
         $latestTermsDate = new \DateTimeImmutable('-1 year');
 
+        \BlackfireProbe::addMarker('Enforce the user to agree to terms');
         $form = $this->formFactory->create(AgreeToUpdatedTermsFormType::class);
 
         $html = $this->twig->render('main/agreeUpdatedTerms.html.twig', [
