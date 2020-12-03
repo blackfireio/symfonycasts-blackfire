@@ -43,6 +43,11 @@ class AgreeToTermsSubscriber implements EventSubscriberInterface
         //$latestTermsDate = new \DateTimeImmutable('2019-10-15');
         $latestTermsDate = new \DateTimeImmutable('-1 year');
 
+        // user is up-to-date!
+        if ($user->getAgreedToTermsAt() >= $latestTermsDate) {
+            return;
+        }
+
         \BlackfireProbe::addMarker('Enforce the user to agree to terms');
         $form = $this->formFactory->create(AgreeToUpdatedTermsFormType::class);
 
@@ -54,11 +59,6 @@ class AgreeToTermsSubscriber implements EventSubscriberInterface
         // "exit" this function before rendering the template if
         // we know the user doesn't need to see the form!
         $this->entrypointLookup->reset();
-
-        // user is up-to-date!
-        if ($user->getAgreedToTermsAt() >= $latestTermsDate) {
-            return;
-        }
 
         $response = new Response($html);
         $event->setResponse($response);
