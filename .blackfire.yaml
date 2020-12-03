@@ -1,0 +1,94 @@
+# This is a sample .blackfire.yaml file created by Blackfire.
+# You can read more about .blackfire.yaml here: https://blackfire.io/docs/cookbooks/tests
+metrics:
+    app.user_activity_calculation:
+        label: "User activity calculation"
+        timeline: true
+        marker: true
+        matching_calls:
+            php:
+                -
+                    callee: '=App\Service\CommentHelper::countRecentCommentsForUser'
+
+    app.agree_to_terms:
+        label: "Agree to terms"
+        matching_calls:
+            php:
+                -
+                    caller: '=App\EventSubscriber\AgreeToTermsSubscriber::onRequestEvent'
+                    callee: '|Symfony\Component\Form\FormFactoryInterface::create'
+
+tests:
+    "The homepage should be fast":
+        path: "/"
+        assertions:
+            - "main.wall_time < 100ms"
+
+    "The number of created entities should be reasonable":
+        path: "/.*"
+        assertions:
+            - "metrics.entities.created.count < 50"
+
+    "The homepage should have a limited number of SQL queries":
+        path: "/"
+        assertions:
+            - "metrics.sql.queries.count <= 5"
+
+
+    "The autoloader classmap should be dumped":
+        path: "/.*"
+        assertions:
+            - "metrics.composer.autoload.find_file.count == 0"
+
+    "User activity calculation should be cached":
+        path: "/sighting/.*"
+        assertions:
+            - "metrics.app.user_activity_calculation.count == 0"
+
+    "User should already have agreed to terms":
+        path: "/.*"
+        assertions:
+            - "metrics.app.agree_to_terms.count == 0"
+
+    "Github API should be called only once":
+        path: "/api/github-organization"
+        assertions:
+            - "metrics.http.requests.count == 1"
+
+# For writing scenarios, take a look at the documentation
+# https://blackfire.io/docs/cookbooks/scenarios
+scenarios: |
+    #!blackfire-player
+
+    scenario
+        name "Basic Visit"
+        visit url("/")
+            name "Homepage"
+            expect status_code() == 200
+            expect css("tbody.js-sightings-list tr").count() > 10
+
+        #click css('tbody.js-sightings-list tr a')
+        click css('.js-sightings-list > tr:nth-child(3) a')
+            name "First sighting page"
+            expect status_code() == 200
+
+    scenario
+        name "Authenticated Visit"
+
+        visit url("/")
+            name "Homepage"
+            expect status_code() == 200
+
+        click link("Log In")
+            name "Login page"
+
+        submit button("Sign in")
+            name "Authenticate"
+            #follow_redirects true
+            param email "lkihn@example.com"
+            param password "believe"
+
+        follow
+            expect current_url() == endpoint ~ '/'
+            expect css('nav.navbar ul.navbar-nav > li.nav-item:nth-child(3) a.nav-link').text() == ' Log Out'
+            assert metrics.app.agree_to_terms.count == 0
