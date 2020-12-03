@@ -47,7 +47,8 @@
         "sort-packages": true,
         "platform": {
             "php": "7.4"
-        }
+        },
+        "apcu-autoloader": true
     },
     "autoload": {
         "psr-4": {
